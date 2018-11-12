@@ -1,0 +1,5 @@
+data/org.gnome.Reddit-App.desktop.in
+data/org.gnome.Reddit-App.appdata.xml.in
+data/org.gnome.Reddit-App.gschema.xml
+src/window.uisrc/main.vala
+src/window.vala
