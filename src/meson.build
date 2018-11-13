@@ -17,6 +17,7 @@ reddit_app_sources += gnome.compile_resources('reddit-app-resources',
 )
 
 executable('reddit-app', reddit_app_sources,
-  vala_args: '--target-glib=2.50 -D HANDY_USE_UNSTABLE_API',  dependencies: reddit_app_deps,
+  vala_args: '--target-glib=2.50',  dependencies: reddit_app_deps,
+  c_args: '-DHANDY_USE_UNSTABLE_API',
   install: true,
 )
