@@ -26,8 +26,6 @@ namespace RedditApp {
 		public Window (Gtk.Application app) {
 			Object (application: app);
 
-            var dialer = new Hdy.Dialer();
-            this.add(dialer);
 		}
 	}
 }
