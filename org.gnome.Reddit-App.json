@@ -34,6 +34,28 @@
         "*.a"
     ],
     "modules" : [
+    	{
+    	    "name": "json-glib",
+    	    "buildsystem": "meson",
+    	    "builddir": true,
+    	    "config-opts": [],
+    	    "sources": [
+    	        "type": "archive",
+    	        "url": "https://download.gnome.org/sources/json-glib/1.4/json-glib-1.4.4.tar.xz"
+    	    ]
+    	},
+        {
+            "name": "libsoup",
+            "buildsystem": "meson",
+            "builddir": true,
+            "config-opts": [],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://download.gnome.org/sources/libsoup/2.4/libsoup-2.4.1.tar.gz"
+                }
+            ],
+        },
         {
             "name" : "libhandy",
             "buildsystem" : "meson",
