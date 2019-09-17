@@ -17,19 +17,8 @@
  */
 
 namespace RedditApp {
-	// public class PostModel : GLib.Object {
-	//     public string title;
-
- //        public PostModel(string title) {
- //            this.title = title;
- //        }
-
- //    }
-
 	[GtkTemplate (ui = "/org/gnome/Reddit-App/window.ui")]
 	public class Window : Gtk.ApplicationWindow {
-		[GtkChild]
-		private Hdy.Leaflet header;
 
 		[GtkChild]
 		private Gtk.ListBox post_list;
@@ -37,22 +26,67 @@ namespace RedditApp {
 		[GtkChild]
 		private Gtk.Stack content;
 
+		[GtkChild]
+		private Gtk.Box front_page;
+
+		[GtkChild]
+		private Gtk.ScrolledWindow comment_page;
+
+		[GtkChild]
+		private Gtk.ScrolledWindow subreddit_page;
+
+		[GtkChild]
+		private Gtk.ListBox comments_list;
+
+		[GtkChild]
+		private Gtk.Box comment_page_post_box;
+
+		[GtkChild]
+		private Gtk.ListBox subreddit_post_list;
+
 		private GLib.ListStore post_list_store;
 
 		public Window (Gtk.Application app) {
 			Object (application: app);
 
-		    var api = RedditApp.Api.instance();
-		    api.loadFrontPage();
+			var store_instance = RedditApp.Store.get_instance();
+			//  post_list_store = new GLib.ListStore(GLib.Type.OBJECT);
+		    post_list.bind_model((GLib.ListModel) store_instance.post_list_store, (item) => {
+		        return new RedditApp.RedditPost((RedditApp.PostModel) item);
+			});
 
-            post_list_store = new GLib.ListStore(GLib.Type.OBJECT);
-		    post_list.bind_model((GLib.ListModel) this.post_list_store, (item) => {
-                return new Gtk.Label("foobar");
-		    });
-		    post_list_store.append(new RedditApp.PostModel("adam"));
+            subreddit_post_list.bind_model((GLib.ListModel) store_instance.subreddit_post_list_store, (item) => {
+		        return new RedditApp.RedditPost((RedditApp.PostModel) item);
+            });
+
+            comments_list.bind_model(store_instance.comments_list_store, (item) => {
+                return new RedditApp.RedditComment((RedditApp.CommentModel) item);
+            });
+
+            //store_instance.notify["current_page"].connect((s, Prop) => {
+            store_instance.nav.connect((s, prop) => {
+                //var val = RedditApp.Store.get_instance().current_page;
+                switch(prop) {
+                    case RedditApp.pages.FRONT:
+                      content.visible_child_name = "front_page";
+                      break;
+                    case RedditApp.pages.COMMENTS:
+                      // set post
+                      var post = new RedditCardPost(store_instance.comments_page_post, true);
+
+                      comment_page_post_box.add(post);
+                      post.show();
+                      content.visible_child_name = "comment_page";
+                      break;
+                    case RedditApp.pages.SUBREDDIT:
+                      content.visible_child_name = "subreddit_page";
+                      break;
+                }
+            });
+
+			RedditApp.Controller.instance().load_front_page();
 
 		}
-
 
 		[GtkCallback]
 		public bool on_key_pressed (Gdk.EventKey event) {
@@ -69,15 +103,13 @@ namespace RedditApp {
 		}
 
 		[GtkCallback]
-		public void on_back_clicked () {
-			header.visible_child_name = "sidebar";
+		public void on_header_click () {
+		    content.visible_child_name = "subreddit_page";
 		}
 
 		[GtkCallback]
-		public void on_show_content_clicked () {
-			header.visible_child_name = "content";
-		    content.set_visible_child_name("front_page");
-		    stdout.printf("\nthe content clicked was called \n\n");
+		private void on_subreddit_page_btn_click() {
+		    content.visible_child_name = "front_page";
 		}
 	}
 }

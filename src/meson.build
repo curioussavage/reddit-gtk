@@ -1,6 +1,15 @@
 reddit_app_sources = [
   'main.vala',
+  'utils.vala',
+  'downloader.vala',
+  'comment_model.vala',
+  'comment.vala',
   'post_model.vala',
+  'post_popover.vala',
+  'cardpost.vala',
+  'post.vala',
+  'store.vala',
+  'controller.vala',
   'window.vala',
   'api.vala',
 ]

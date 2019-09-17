@@ -3,8 +3,8 @@ using Gtk;
 using RedditApp;
 
 namespace RedditApp {
-	[GtkTemplate (ui = "/org/gnome/Reddit-App/post.ui")]
-	public class RedditPost : Gtk.ListBoxRow {
+	[GtkTemplate (ui = "/org/gnome/Reddit-App/cardpost.ui")]
+	public class RedditCardPost : Gtk.ListBoxRow {
 		[GtkChild]
 		private Gtk.Label post_title;
 
@@ -75,42 +75,52 @@ namespace RedditApp {
 
 			comments_button.clicked.connect(handle_comments_page_click);
 
-			var filename = model.id;
-			stdout.printf("model has thumb \n\n");
-			stdout.printf(model.has_thumbnail.to_string());
-			if (model.has_thumbnail) {
-			    this.post_image.visible = true;
-			    var file_path = Environment.get_home_dir () + "/.cache/reddit-app/media/" + filename;
-			    GLib.File file = File.new_for_path (file_path);
+			var filename = model.id + "-preview";
+			if (model.has_preview) {
+                // download it
+                var instance = Utils.Downloader.get_instance();
+                string loc = Environment.get_home_dir() + "/.cache/reddit-app/media/" + filename;
+				var file = File.new_for_uri(this._model.preview.url);
+				stdout.printf("\nurl is: ");
+				stdout.printf(this._model.preview.url);
+				stdout.printf("\n" + Soup.URI.decode(this._model.preview.url) + "\n");
+                instance.download.begin(filename, file, loc);
 
-			    if (file.query_exists ()) {
-				    try {
-					    var media_pixbuf = new Gdk.Pixbuf.from_file_at_scale ( // should use the thumbnail size info for this
-						    file_path,
-						    140, 140, true);
-						var scaled = media_pixbuf.scale_simple(100, 100, Gdk.BILINEAR);
-					    post_image.set_from_pixbuf(scaled);
-				    } catch(Error e) {
-					    stdout.printf("error in pic");
-				    }
-			    } else {
-				    Utils.Downloader.get_instance().downloaded.connect((download) => {
-						if (download.id == this._model.id) {
-							var media_pixbuf = new Gdk.Pixbuf.from_file_at_scale (
-								file_path,
-								140, 140, true);
-							var scaled = media_pixbuf.scale_simple(100, 100, Gdk.BILINEAR);
-							post_image.set_from_pixbuf(scaled);
-						}
-				    });
-			    }
+                // display it
+                instance.downloaded.connect((download) => {
+                    if (download.id == filename) {
+                        stdout.printf("\n\ndownloaded comment page image \n\n");
+                        //display
+                        this.post_image.visible = true;
+                        GLib.File downloaded_file = File.new_for_path (loc);
+
+                        stdout.printf("checking if file at " + loc + " exists\n");
+                        if (downloaded_file.query_exists ()) {
+                            stdout.printf("the preview image exists yay");
+                            try {
+                                var media_pixbuf = new Gdk.Pixbuf.from_file_at_scale(
+                                    loc, (int) this._model.preview.width, (int) this._model.preview.height, true
+								);
+								var width = this.get_allocated_width();
+								var height = (width * (int) this._model.preview.height) / this._model.preview.width;
+
+                                var scaled = media_pixbuf.scale_simple(width, (int) height, Gdk.BILINEAR);
+                                post_image.set_from_pixbuf(scaled);
+                                post_image.show();
+                            } catch(Error e) {
+                                stdout.printf("error in pic");
+                            }
+                        }
+                    }
+                });
 			}
 		}
 
-		public RedditPost(RedditApp.PostModel model, bool is_comment_page=false) {
+		public RedditCardPost(RedditApp.PostModel model, bool is_comment_page=false) {
 		    Object();
 		    init(model, is_comment_page);
 		}
 
 	}
 }
+

@@ -2,5 +2,9 @@
 <gresources>
   <gresource prefix="/org/gnome/Reddit-App">
     <file>window.ui</file>
+    <file>post.ui</file>
+    <file>comment.ui</file>
+    <file>post_popover.ui</file>
+    <file>cardpost.ui</file>
   </gresource>
 </gresources>
